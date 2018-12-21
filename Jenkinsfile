@@ -12,11 +12,7 @@ pipeline {
     }
     environment {
         // In case another branch beside master or develop should be deployed, enter it here
-        BRANCH_TO_DEPLOY = 'disabled'
-        // This version will be used for the tags of develop builds
-        BUILDER_IMAGE_DEVELOP_VERSION = 'latest'
-        // This version will be used for the image tags if the branch is merged to master
-        BUILDER_IMAGE_RELEASE_VERSION = '1.5'
+        BRANCH_TO_DEPLOY = 'xyz'
         DISCORD_WEBHOOK = credentials('991ce248-5da9-4068-9aea-8a6c2c388a19')
     }
     stages {
@@ -93,9 +89,6 @@ pipeline {
                     }
                 }
                 stage('Raspberry Pi') {
-                    agent {
-                        label "docker"
-                    }
                     steps {
                         script {
                             withDockerRegistry(credentialsId: '051efa8c-aebd-40f7-9cfd-0053c413266e') {
@@ -186,9 +179,6 @@ pipeline {
                     }
                 }
                 stage('Raspberry Pi') {
-                    agent {
-                        label "docker"
-                    }
                     steps {
                         script {
                             withDockerRegistry(credentialsId: '051efa8c-aebd-40f7-9cfd-0053c413266e') {
@@ -223,98 +213,14 @@ pipeline {
                 }
             }
         }
-        stage('Release and upload image') {
+        stage('Info') {
             when {
                 branch 'master'
             }
             //noinspection GroovyAssignabilityCheck
-            parallel {
-                stage('Debian') {
-                    steps {
-                        script {
-                            withDockerRegistry(credentialsId: '051efa8c-aebd-40f7-9cfd-0053c413266e') {
-                                sh "docker build -f Debian/Dockerfile --rm -t spectreproject/spectre-builder-debian:${BUILDER_IMAGE_RELEASE_VERSION} ."
-                                sh "docker push spectreproject/spectre-builder-debian:${BUILDER_IMAGE_RELEASE_VERSION}"
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            sh "docker system prune --all --force"
-                        }
-                    }
-                }
-                stage('CentOS') {
-                    agent {
-                        label "docker"
-                    }
-                    steps {
-                        script {
-                            withDockerRegistry(credentialsId: '051efa8c-aebd-40f7-9cfd-0053c413266e') {
-                                sh "docker build -f CentOS/Dockerfile --rm -t spectreproject/spectre-builder-centos:${BUILDER_IMAGE_RELEASE_VERSION} ."
-                                sh "docker push spectreproject/spectre-builder-centos:${BUILDER_IMAGE_RELEASE_VERSION}"
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            sh "docker system prune --all --force"
-                        }
-                    }
-                }
-                stage('Fedora') {
-                    agent {
-                        label "docker"
-                    }
-                    steps {
-                        script {
-                            withDockerRegistry(credentialsId: '051efa8c-aebd-40f7-9cfd-0053c413266e') {
-                                sh "docker build -f Fedora/Dockerfile --rm -t spectreproject/spectre-builder-fedora:${BUILDER_IMAGE_RELEASE_VERSION} ."
-                                sh "docker push spectreproject/spectre-builder-fedora:${BUILDER_IMAGE_RELEASE_VERSION}"
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            sh "docker system prune --all --force"
-                        }
-                    }
-                }
-                stage('Raspberry Pi') {
-                    agent {
-                        label "docker"
-                    }
-                    steps {
-                        script {
-                            withDockerRegistry(credentialsId: '051efa8c-aebd-40f7-9cfd-0053c413266e') {
-                                sh "docker build -f RaspberryPi/Dockerfile --rm -t spectreproject/spectre-builder-raspi:${BUILDER_IMAGE_RELEASE_VERSION} ."
-                                sh "docker push spectreproject/spectre-builder-raspi:${BUILDER_IMAGE_RELEASE_VERSION}"
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            sh "docker system prune --all --force"
-                        }
-                    }
-                }
-                stage('Ubuntu') {
-                    agent {
-                        label "docker"
-                    }
-                    steps {
-                        script {
-                            withDockerRegistry(credentialsId: '051efa8c-aebd-40f7-9cfd-0053c413266e') {
-                                sh "docker build -f Ubuntu/Dockerfile --rm -t spectreproject/spectre-builder-ubuntu:${BUILDER_IMAGE_RELEASE_VERSION} ."
-                                sh "docker push spectreproject/spectre-builder-ubuntu:${BUILDER_IMAGE_RELEASE_VERSION}"
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            sh "docker system prune --all --force"
-                        }
-                    }
+            steps {
+                script {
+                    sh "echo 'No build steps on master branch performed, use tagImage-Job perform image releases'"
                 }
             }
         }
